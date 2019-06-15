@@ -10,6 +10,8 @@ class character {
     isHero = false;
     isEnemy = false;
     isDefender = false;
+    powerImprove = 1;
+    isDead = false;
 
     constructor(charName, charImg) {
         this.name = charName;
@@ -17,19 +19,54 @@ class character {
         this.generatePoints();
     }
 
+    setHero() {
+        this.isHero = true;
+    };
+
+    setDefender() {
+        this.isDefender = true;
+    };
+
+    setEnemy() {
+        this.isEnemy = true;
+    };
+
     generatePoints() {
         this.hp = Math.floor(Math.random() * (250 - 90 + 1)) + 90;
         this.ap = Math.floor(Math.random() * (15 - 8 + 1)) + 8;
         this.cp = Math.floor(Math.random() * (20 - 35 + 1)) + 35;
     };
 
-    attack(times) {
-        return this.ap * times;
+    attack() {
+        var totAtack = this.ap * this.powerImprove;
+        //console.log("AP "+this.ap);
+        //console.log("PI "+this.powerImprove);     
+        //console.log("atcki "+totAtack);
+        this.powerImprove++;
+        return parseInt(totAtack);
     };
 
     counterAttack() {
         return this.cp;
     };
+
+    receiveAttack(atck) {
+        //console.log("receive ATK "+atck);
+        //console.log("HP "+this.hp);
+        this.hp = this.hp - atck;
+        //console.log("HP "+this.hp);
+    };
+
+    isAlive() {
+        if (this.hp > 0) {
+            return true;
+        } else {
+            this.hp = 0;
+            this.isDead = true;
+            return false;
+        }
+    };
+
 };
 
 var anakin = new character("Anakin", "anakin.png");
@@ -43,13 +80,15 @@ var defenderSelected;
 var characteres = [anakin, darth, yoda, obiwan];
 var enemies;
 
-function linkCharacters(player, charac, pos) {
-    $("#" + player + "Name" + pos).text(charac.name);
-    $("#" + player + "Image" + pos).attr("src", charac.img);
-    $("#" + player + "HP" + pos).text(charac.hp);
+function linkCharacters() {
+    for (var index = 0; index < characteres.length; index++) {
+        $("#charName" + index).text(characteres[index].name);
+        $("#charImage" + index).attr("src", characteres[index].img);
+        $("#charHP" + index).text(characteres[index].hp);
+    }
 }
 
-function toggleClasses(hook,className){
+function toggleClasses(hook, className) {
 
 }
 
@@ -76,35 +115,69 @@ for (var i = 0; i < characteres.length; i++) { //
 }
 $(".newCardChar button").css('display', 'inline-block');
 
-for (var index = 0; index < characteres.length; index++) {
-    linkCharacters("char", characteres[index],index );
-}
+linkCharacters();
 
-$(".newCardChar").on("click", function() {
-    heroSelected=this;
-    for (var i=0;i<characteres.length;i++){
-        var tempPlayer = document.getElementById("player"+i);
-        if(!(heroSelected.value==tempPlayer.value)) {
-            $("#player"+i).clone().appendTo(yourEnemiesDiv);
-            $("#player"+i).remove();
-            $("#player"+i).toggleClass("enemiesGroup", true);
-            $("#player"+i).toggleClass("newCardChar",false);
+$(".newCardChar").on("click", function () {
+
+    var hero;
+    var defender;
+
+    heroSelected = this;
+
+    for (var i = 0; i < characteres.length; i++) {
+        var tempPlayer = document.getElementById("player" + i);
+        if (!(heroSelected.value == tempPlayer.value)) {
+            $("#player" + i).clone().appendTo(yourEnemiesDiv);
+            $("#player" + i).remove();
+            $("#player" + i).toggleClass("enemiesGroup", true);
+            $("#player" + i).toggleClass("newCardChar", false);
         }
     }
 
-    $(".enemiesGroup").on("click", function() {
-        defenderSelected=this;
-        for (var i=0;i<characteres.length;i++){
-            var tempPlayer = document.getElementById("player"+i);
-            if((defenderSelected.value==tempPlayer.value)&&(!(heroSelected.value==tempPlayer.value))) {
-                $("#player"+i).clone().appendTo(yourDefenderDiv);
-                $("#player"+i).remove();
-                $("#player"+i).toggleClass("defenderGroup", true);
-                $("#player"+i).toggleClass("enemiesGroup", false);
+    hero = characteres[parseInt(heroSelected.value)];
+    hero.setHero();
+
+    $(".enemiesGroup").on("click", function () {
+        defenderSelected = this;
+        for (var i = 0; i < characteres.length; i++) {
+            if (!characteres[i].isDead) {
+                var tempPlayer = document.getElementById("player" + i);
+                if ((defenderSelected.value == tempPlayer.value) && (!(heroSelected.value == tempPlayer.value))) {
+                    $("#player" + i).clone().appendTo(yourDefenderDiv);
+                    $("#player" + i).remove();
+                    $("#player" + i).toggleClass("defenderGroup", true);
+                    $("#player" + i).toggleClass("enemiesGroup", false);
+                }
             }
         }
 
-        
+        defender = characteres[parseInt(defenderSelected.value)];
+        defender.setDefender();
+
+        $("#attackBtn").on("click", function () {
+            if ((defender.isAlive()) && (hero.isAlive())) {
+                defender.receiveAttack(hero.attack());
+                if (defender.isAlive) {
+                    hero.receiveAttack(defender.counterAttack());
+                    hero.isAlive();
+                }
+            }
+            linkCharacters();
+            if (!defender.isAlive()) {
+                console.log("You WIN");
+                console.log("Select another enemy");
+                $("#player" + defenderSelected.value).remove();
+            }
+            if (!hero.isAlive()) {
+                console.log("You LOSE");
+                console.log("Play again?");
+                //$("#player" + defenderSelected.value).remove();
+            }
+            return;
+        });
+
+
+
 
     });
 });
