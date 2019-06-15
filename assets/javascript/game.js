@@ -37,7 +37,11 @@ var darth = new character("Darth Vader", "darth.png");
 var yoda = new character("Yoda", "yoda.png");
 var obiwan = new character("Obi Wan", "obiwan.png");
 
+var heroSelected;
+var defenderSelected;
+
 var characteres = [anakin, darth, yoda, obiwan];
+var enemies;
 
 function linkCharacters(player, charac, pos) {
     $("#" + player + "Name" + pos).text(charac.name);
@@ -45,10 +49,17 @@ function linkCharacters(player, charac, pos) {
     $("#" + player + "HP" + pos).text(charac.hp);
 }
 
-var yourPlayerDiv = $("#hook");
+function toggleClasses(hook,className){
+
+}
+
+var yourPlayerDiv = $("#hookCharac");
+var yourEnemiesDiv = $("#hookEnemies");
+var yourDefenderDiv = $("#hookDefender");
+
 
 for (var i = 0; i < characteres.length; i++) { //
-    var newCharDiv = $("<button id=\"player" + i + "\" class=\"newCard\">" +
+    var newCharDiv = $("<button id=\"player" + i + "\" class=\"newCardChar\" value=\"" + i + "\">" +
         "<div class=\"card text-center\">" +
         "<div class=\"card-header\">" +
         "<h5 id=\"charName" + i + "\"></h5>" +
@@ -63,13 +74,42 @@ for (var i = 0; i < characteres.length; i++) { //
         "</button>");
     yourPlayerDiv.append(newCharDiv);
 }
-$(".newCard button").css('display', 'inline-block');
+$(".newCardChar button").css('display', 'inline-block');
 
 for (var index = 0; index < characteres.length; index++) {
     linkCharacters("char", characteres[index],index );
 }
 
+$(".newCardChar").on("click", function() {
+    heroSelected=this;
+    for (var i=0;i<characteres.length;i++){
+        var tempPlayer = document.getElementById("player"+i);
+        if(!(heroSelected.value==tempPlayer.value)) {
+            $("#player"+i).clone().appendTo(yourEnemiesDiv);
+            $("#player"+i).remove();
+            $("#player"+i).toggleClass("enemiesGroup", true);
+            $("#player"+i).toggleClass("newCardChar",false);
+        }
+    }
+
+    $(".enemiesGroup").on("click", function() {
+        defenderSelected=this;
+        for (var i=0;i<characteres.length;i++){
+            var tempPlayer = document.getElementById("player"+i);
+            if((defenderSelected.value==tempPlayer.value)&&(!(heroSelected.value==tempPlayer.value))) {
+                $("#player"+i).clone().appendTo(yourDefenderDiv);
+                $("#player"+i).remove();
+                $("#player"+i).toggleClass("defenderGroup", true);
+                $("#player"+i).toggleClass("enemiesGroup", false);
+            }
+        }
+
+        
+
+    });
+});
 
 
 
-//});
+
+
