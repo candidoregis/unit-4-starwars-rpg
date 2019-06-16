@@ -1,5 +1,7 @@
 body {
-
+    background-image: url(../images/starwarsbg.jpg);
+    background-repeat: no-repeat;
+    background-size: 100%;
 }
 
 button {
@@ -7,6 +9,8 @@ button {
     border: transparent;
     width: 170px;
     height: 170px;
+    margin-right: 10px;
+    background-color: transparent;
 }
 
 .card {
@@ -14,7 +18,16 @@ button {
     height: 167px;
 }
 
-.newCardChar{
+.newCardChar .card-body {
+    background-color: gold;
+}
+
+.enemiesGroup .card-body {
+    background-color: red;
+}
+
+.defenderGroup .card-body {
+    background-color: blue;
 }
 
 .card-header{
