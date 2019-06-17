@@ -1,4 +1,6 @@
-//
+// BUG - When defeating one defender, the next defender receives 2 attacks
+// OUTPUT CONSOLE - Need to be reviewed to display better
+// RESTART BUTTON - Need to create it
 
 class character {
     name = "";
@@ -69,11 +71,13 @@ var obiwan = new character("Obi Wan", "obiwan.png");
 
 var heroSelected;
 var defenderSelected;
+isDefenderSelected = false;
 
 var characteres = [anakin, darth, yoda, obiwan];
 var enemies;
 var rounds = characteres.length - 1;
 
+// Function to mirror values in the page
 function linkCharacters() {
     for (var index = 0; index < characteres.length; index++) {
         $("#charName" + index).text(characteres[index].name);
@@ -82,19 +86,16 @@ function linkCharacters() {
     }
 }
 
-function toggleClasses(hook, className) {
-
-}
-
 var yourPlayerDiv = $("#hookCharac");
 var yourEnemiesDiv = $("#hookEnemies");
 var yourDefenderDiv = $("#hookDefender");
 
+// Function to log variables for debugging
 function logBattle(char, currentHero, currentDefender) {
-    if (char === "defender"){
+    if (char === "defender") {
         console.log("HERO: HP=" + currentHero.hp + " AP=" + (currentHero.ap * currentHero.powerImprove));
     }
-    if (char === "hero"){
+    if (char === "hero") {
         console.log("DEFENDER: HP=" + currentDefender.hp + " CP=" + currentDefender.cp);
     }
 }
@@ -119,16 +120,15 @@ $(".newCardChar button").css('display', 'inline-block');
 
 linkCharacters();
 
+var hero;
+var defender;
+
+// Function for when hero button is clicked
 $(".newCardChar").on("click", function () {
-
-    var hero;
-    var defender;
-
     heroSelected = this;
-
     for (var i = 0; i < characteres.length; i++) {
         var tempPlayer = document.getElementById("player" + i);
-        if (!(heroSelected.value == tempPlayer.value)) {
+        if (!(heroSelected.value == tempPlayer.value)) {     //Characters that are not heroes become enemies
             $("#player" + i).clone().appendTo(yourEnemiesDiv);
             $("#player" + i).remove();
             $("#player" + i).toggleClass("enemiesGroup", true);
@@ -139,73 +139,77 @@ $(".newCardChar").on("click", function () {
     hero = characteres[parseInt(heroSelected.value)];
     hero.setHero();
 
+    console.log(isDefenderSelected);
+
+    // Function for when enemies button is clicked
     $(".enemiesGroup").on("click", function () {
-        defenderSelected = this;
-        for (var i = 0; i < characteres.length; i++) {
-            if (!characteres[i].isDead) {
-                var tempPlayer = document.getElementById("player" + i);
-                if ((defenderSelected.value == tempPlayer.value) && (!(heroSelected.value == tempPlayer.value))) {
-                    $("#player" + i).clone().appendTo(yourDefenderDiv);
-                    $("#player" + i).remove();
-                    $("#player" + i).toggleClass("defenderGroup", true);
-                    $("#player" + i).toggleClass("enemiesGroup", false);
+        console.log(isDefenderSelected);
+        if (isDefenderSelected == false) {
+            defenderSelected = this;
+            for (var i = 0; i < characteres.length; i++) {
+                if (!characteres[i].isDead) {
+                    var tempPlayer = document.getElementById("player" + i);
+                    if ((defenderSelected.value == tempPlayer.value) && (!(heroSelected.value == tempPlayer.value))) {
+                        //Character chosen becomes defender remaining continue as enemies
+                        $("#player" + i).clone().appendTo(yourDefenderDiv);
+                        $("#player" + i).remove();
+                        $("#player" + i).toggleClass("defenderGroup", true);
+                        $("#player" + i).toggleClass("enemiesGroup", false);
+                    }
                 }
             }
+
+            defender = characteres[parseInt(defenderSelected.value)];
+            defender.setDefender();
+            isDefenderSelected = true;
+            console.log("New Defender"); //Debug purposes
         }
 
-        defender = characteres[parseInt(defenderSelected.value)];
-        defender.setDefender();
-        console.log("New Defender");
-
-        $("#consoleStatus").text("Battle Started");
-
+        // Function for when attack button is clicked
         $("#attackBtn").on("click", function () {
-            //linkCharacters();
-            console.log("RODADA " + hero.powerImprove);
-            if (defender.isAlive() && hero.isAlive()) {
-                console.log("Hero attacked");
-                logBattle("hero",hero, defender);
-                //linkCharacters();
-                $("#consoleStatus").empty();
-                defender.receiveAttack(hero.attack());
-                $("#consoleStatus").append("<h3>You attacked " + defender.name + " for " + (hero.ap * (hero.powerImprove - 1)) + " damage.</h3>");
-                if (defender.isAlive()) {
-                    console.log("Defender attacked");
-                    hero.receiveAttack(defender.counterAttack());
-                    $("#consoleStatus").append("<h3>" + defender.name + " attacked you back for " + defender.cp + " damage.</h3>");
-                    logBattle("defender",hero, defender);
-                }
-                linkCharacters();
-                if (!defender.isAlive()) {
-                    rounds--;
+            if (isDefenderSelected) {
+                console.log("RODADA " + hero.powerImprove);
+                if (defender.isAlive() && hero.isAlive()) { //Verify if both players are alive
+                    console.log("Hero attacked");
+                    logBattle("hero", hero, defender);
                     $("#consoleStatus").empty();
-                    $("#consoleStatus").append("<h3>Defender defeated.</h3>");
-                    $("#player" + defenderSelected.value).remove(); 
-                }
-                if (!hero.isAlive()) {
-                    $("#consoleStatus").empty();
-                    $("#consoleStatus").append("<h3>Hero defeated.</h3>");
-                    $("#player" + heroSelected.value).remove();
-                }
+                    defender.receiveAttack(hero.attack());
+                    $("#consoleStatus").append("<h3>You attacked " + defender.name + " for " + (hero.ap * (hero.powerImprove - 1)) + " damage.</h3>");
+                    if (defender.isAlive()) { //Verify if defender is still alive after receiving damage
+                        console.log("Defender attacked");
+                        hero.receiveAttack(defender.counterAttack());
+                        $("#consoleStatus").append("<h3>" + defender.name + " attacked you back for " + defender.cp + " damage.</h3>");
+                        logBattle("defender", hero, defender);
+                    }
+                    linkCharacters();
+                    if (!defender.isAlive()) { // Verify if defender is dead to remove it from list
+                        rounds--;
+                        $("#consoleStatus").empty();
+                        $("#consoleStatus").append("<h3>Defender defeated.</h3>");
+                        $("#player" + defenderSelected.value).remove();
+                        isDefenderSelected = false;
+                    }
+                    if (!hero.isAlive()) { // Verify if hero is dead to remove it from list
+                        $("#consoleStatus").empty();
+                        $("#consoleStatus").append("<h3>Hero defeated.</h3>");
+                        $("#player" + heroSelected.value).remove();
+                    }
 
-                if (hero.isAlive()&&(rounds==0)) {
-                    console.log("YOU WON THE WAR");
-                } else if (!hero.isAlive()) {
-                    if(rounds==0){
-                        console.log("IT'S A DRAW, BUT YOU LOST THE WAR");
-                    } else {
-                        console.log("YOU LOST THE WAR");
+                    // Verify who won the game
+                    if (hero.isAlive() && (rounds == 0)) {
+                        console.log("YOU WON THE WAR");
+                    } else if (!hero.isAlive()) {
+                        if (rounds == 0) {
+                            console.log("IT'S A DRAW, BUT YOU LOST THE WAR");
+                        } else {
+                            console.log("YOU LOST THE WAR");
+                        }
                     }
                 }
             }
         });
-
-
-
-
     });
 });
-
 
 
 

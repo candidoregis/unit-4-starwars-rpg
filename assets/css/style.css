@@ -5,6 +5,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* HEADER */
 .custom-header{
     background-color: black;
     color: white;
@@ -19,6 +20,7 @@ body {
     display: inline-block;
 }
 
+/* BUTTONS */
 button {
     padding: 0;
     border: transparent;
