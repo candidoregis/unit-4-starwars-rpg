@@ -2,6 +2,21 @@ body {
     background-image: url(../images/starwarsbg.jpg);
     background-repeat: no-repeat;
     background-size: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.custom-header{
+    background-color: black;
+    color: white;
+    align-items: center;
+    margin: 0;
+}
+
+#swlogo {
+    width: 10%;
+    height: 10%;
+    padding-left: 5%;
+    display: inline-block;
 }
 
 button {
@@ -49,8 +64,10 @@ button {
 }
 
 #attackBtn {
+    margin-top: 10px;
     width: 60px;
     height:20px ;
+    background-color: azure;
 }
 
 img {

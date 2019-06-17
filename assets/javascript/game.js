@@ -72,6 +72,7 @@ var defenderSelected;
 
 var characteres = [anakin, darth, yoda, obiwan];
 var enemies;
+var rounds = characteres.length - 1;
 
 function linkCharacters() {
     for (var index = 0; index < characteres.length; index++) {
@@ -89,6 +90,14 @@ var yourPlayerDiv = $("#hookCharac");
 var yourEnemiesDiv = $("#hookEnemies");
 var yourDefenderDiv = $("#hookDefender");
 
+function logBattle(char, currentHero, currentDefender) {
+    if (char === "defender"){
+        console.log("HERO: HP=" + currentHero.hp + " AP=" + (currentHero.ap * currentHero.powerImprove));
+    }
+    if (char === "hero"){
+        console.log("DEFENDER: HP=" + currentDefender.hp + " CP=" + currentDefender.cp);
+    }
+}
 
 for (var i = 0; i < characteres.length; i++) { //
     var newCharDiv = $("<button id=\"player" + i + "\" class=\"newCardChar\" value=\"" + i + "\">" +
@@ -146,37 +155,49 @@ $(".newCardChar").on("click", function () {
 
         defender = characteres[parseInt(defenderSelected.value)];
         defender.setDefender();
+        console.log("New Defender");
 
-        $("#consoleStatus").text("Battle Started" );
-        
+        $("#consoleStatus").text("Battle Started");
+
         $("#attackBtn").on("click", function () {
-            $("#consoleStatus").empty();
-            if ((defender.isAlive()) && (hero.isAlive())) {
-                $("#consoleStatus").append("<h3>Hero attacked Defender</h3>" );
+            //linkCharacters();
+            console.log("RODADA " + hero.powerImprove);
+            if (defender.isAlive() && hero.isAlive()) {
+                console.log("Hero attacked");
+                logBattle("hero",hero, defender);
+                //linkCharacters();
+                $("#consoleStatus").empty();
                 defender.receiveAttack(hero.attack());
-                $("#consoleStatus").append("<h3> Defender received "+(hero.ap*(hero.powerImprove-1))+" of damage.</h3>" );
-
-                if (defender.isAlive) {
-                    $("#consoleStatus").append("Defender counter attacked Hero" );
+                $("#consoleStatus").append("<h3>You attacked " + defender.name + " for " + (hero.ap * (hero.powerImprove - 1)) + " damage.</h3>");
+                if (defender.isAlive()) {
+                    console.log("Defender attacked");
                     hero.receiveAttack(defender.counterAttack());
-                    $("#consoleStatus").append("<h3> Hero received "+defender.cp+" of damage.</h3>" );
+                    $("#consoleStatus").append("<h3>" + defender.name + " attacked you back for " + defender.cp + " damage.</h3>");
+                    logBattle("defender",hero, defender);
+                }
+                linkCharacters();
+                if (!defender.isAlive()) {
+                    rounds--;
+                    $("#consoleStatus").empty();
+                    $("#consoleStatus").append("<h3>Defender defeated.</h3>");
+                    $("#player" + defenderSelected.value).remove(); 
+                }
+                if (!hero.isAlive()) {
+                    $("#consoleStatus").empty();
+                    $("#consoleStatus").append("<h3>Hero defeated.</h3>");
+                    $("#player" + heroSelected.value).remove();
+                }
+
+                if (hero.isAlive()&&(rounds==0)) {
+                    console.log("YOU WON THE WAR");
+                } else if (!hero.isAlive()) {
+                    if(rounds==0){
+                        console.log("IT'S A DRAW, BUT YOU LOST THE WAR");
+                    } else {
+                        console.log("YOU LOST THE WAR");
+                    }
                 }
             }
-            linkCharacters();
-            if (!defender.isAlive()) {
-                $("#consoleStatus").empty();
-                $("#consoleStatus").append("<h3>Defender defeated.</h3>" );
-                $("#consoleStatus").append("<h2>You WIN.</h2>");
-                $("#player" + defenderSelected.value).remove();
-            }
-            if (!hero.isAlive()) {
-                $("#consoleStatus").empty();
-                $("#consoleStatus").append("<h3>Hero defeated.</h3>" );
-                $("#consoleStatus").append("<h2>You LOSE.</h2>");
-                $("#player" + heroSelected.value).remove();
-            }
-            
-            //return;
         });
 
 
